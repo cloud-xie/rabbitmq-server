@@ -221,7 +221,7 @@
               state/0,
               config/0]).
 
--spec init(config()) -> {state(), ra_machine:effects()}.
+-spec init(config()) -> state().
 init(#{name := Name} = Conf) ->
     update_state(Conf, #state{name = Name}).
 
