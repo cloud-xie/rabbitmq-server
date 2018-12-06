@@ -487,6 +487,7 @@ get_stability(FeatureProps) when is_map(FeatureProps) ->
 %% -------------------------------------------------------------------
 
 init() ->
+    ensure_enabled_feature_flags_list_file_exists(),
     _ = list(all),
     ok.
 
@@ -674,6 +675,24 @@ load_registry_mod(Mod, Bin) ->
 %% -------------------------------------------------------------------
 %% Feature flags state storage.
 %% -------------------------------------------------------------------
+
+ensure_enabled_feature_flags_list_file_exists() ->
+    File = enabled_feature_flags_list_file(),
+    case filelib:is_regular(File) of
+        true ->
+            ok;
+        false ->
+            case write_enabled_feature_flags_list([]) of
+                ok ->
+                    ok;
+                {error, Reason} ->
+                    rabbit_log:error(
+                      "Feature flags: failed to write the `feature_flags` "
+                      "file at `~s`: ~s",
+                      [File, file:format_error(Reason)]),
+                    throw({feature_flags_list_write_failure, Reason})
+            end
+    end.
 
 read_enabled_feature_flags_list() ->
     File = enabled_feature_flags_list_file(),
